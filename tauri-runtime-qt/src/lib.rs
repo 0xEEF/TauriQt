@@ -481,6 +481,7 @@ impl rt::window::WindowBuilder for QtWindowBuilder {
         self
     }
 
+    #[cfg(feature = "tauri-runtime-2-12")]
     fn no_redirection_bitmap(self, _enable: bool) -> Self {
         self
     }
@@ -542,16 +543,34 @@ impl<T: UserEvent> rt::RuntimeHandle<T> for QtRuntimeHandle {
         ops::runtime::display_handle()
     }
 
+    #[cfg(feature = "tauri-runtime-2-12")]
     fn primary_monitor(&self) -> Result<Option<Monitor>> {
         ops::screen::primary_monitor()
     }
 
+    #[cfg(not(feature = "tauri-runtime-2-12"))]
+    fn primary_monitor(&self) -> Option<Monitor> {
+        ops::screen::primary_monitor().ok().flatten()
+    }
+
+    #[cfg(feature = "tauri-runtime-2-12")]
     fn monitor_from_point(&self, x: f64, y: f64) -> Result<Option<Monitor>> {
         ops::screen::monitor_from_point(x, y)
     }
 
+    #[cfg(not(feature = "tauri-runtime-2-12"))]
+    fn monitor_from_point(&self, x: f64, y: f64) -> Option<Monitor> {
+        ops::screen::monitor_from_point(x, y).ok().flatten()
+    }
+
+    #[cfg(feature = "tauri-runtime-2-12")]
     fn available_monitors(&self) -> Result<Vec<Monitor>> {
         ops::screen::available_monitors()
+    }
+
+    #[cfg(not(feature = "tauri-runtime-2-12"))]
+    fn available_monitors(&self) -> Vec<Monitor> {
+        ops::screen::available_monitors().ok().unwrap_or_default()
     }
 
     fn cursor_position(&self) -> Result<rt::dpi::PhysicalPosition<f64>> {
@@ -765,6 +784,7 @@ impl<T: UserEvent> rt::WebviewDispatch<T> for QtWebviewDispatcher {
         ops::webview::eval(self.native, &script.into())
     }
 
+    #[cfg(feature = "tauri-runtime-2-12")]
     fn eval_script_with_callback<S: Into<String>>(
         &self,
         script: S,
