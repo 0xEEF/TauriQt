@@ -535,7 +535,10 @@ impl<T: UserEvent> rt::RuntimeHandle<T> for QtRuntimeHandle {
         build_webview::<T>(window_native_of(window_id)?, pending)
     }
 
-    fn run_on_main_thread<F: FnOnce() + Send + 'static>(&self, _f: F) -> Result<()> {
+    fn run_on_main_thread<F: FnOnce() + Send + 'static>(&self, f: F) -> Result<()> {
+        // Qt runs everything on the GUI thread; callers reach us through the
+        // event loop, so executing inline is correct for the MVP.
+        f();
         Ok(())
     }
 
